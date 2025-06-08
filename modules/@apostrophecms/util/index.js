@@ -664,6 +664,23 @@ module.exports = {
       // substitution strings in mind. See the
       // `console.error` documentation.
       error(...args) {
+        if (
+          args.length === 1 &&
+          args[0] instanceof Error &&
+          args[0].aposError &&
+          ['invalid', 'notfound', 'forbidden', 'required'].includes(args[0].name)
+        ) {
+          const err = args[0];
+          const context = err.data && Object.keys(err.data).length
+            ? ` ${JSON.stringify(err.data)}`
+            : '';
+          const message = `${err.name}: ${err.message}${context}`;
+          self.logger.error(...self.convertLegacyLogPayload([ message ]));
+          if (err.stack) {
+            self.logger.error(err.stack);
+          }
+          return;
+        }
         self.logger.error(...self.convertLegacyLogPayload(args));
       },
       // Performance profiling method. At the start of the operation you want

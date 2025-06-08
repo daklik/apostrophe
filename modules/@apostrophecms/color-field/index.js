@@ -33,7 +33,7 @@ module.exports = {
             const isUndefined = _.isUndefined(destination[field.name]) ||
               !destination[field.name].toString().length;
             if (field.required && isUndefined) {
-              throw self.apos.error('required');
+              throw self.apos.error('required', `Color value required for ${field.name}`);
             }
 
             const test = new TinyColor(destination[field.name]);

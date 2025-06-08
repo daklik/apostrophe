@@ -2206,7 +2206,7 @@ module.exports = {
           !self.fieldTypes[field.type].dynamicChoices ||
           !(field.choices && typeof field.choices === 'string')
         ) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `Dynamic choices misconfigured for field ${fieldId}`);
         }
         if (field.following) {
           for (const follows of field.following) {

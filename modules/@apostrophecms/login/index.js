@@ -197,7 +197,7 @@ module.exports = {
           );
 
           if (!user) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', 'User not found for requirement');
           }
 
           const requirement = self.requirements[name];
@@ -588,10 +588,10 @@ module.exports = {
         const email = self.apos.launder.string(usernameOrEmail);
 
         if (!email.length) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', 'Email required');
         }
         if (resetToken !== false && !reset.length) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', 'Reset token invalid');
         }
         const adminReq = self.apos.task.getReq();
         const criteriaOr = [

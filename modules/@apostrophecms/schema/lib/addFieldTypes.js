@@ -124,7 +124,7 @@ module.exports = (self) => {
         field.required &&
         (_.isUndefined(data[field.name]) || !data[field.name].toString().length)
       ) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `Field ${field.name} is required`);
       }
 
       if (field.pattern) {
@@ -436,10 +436,10 @@ module.exports = (self) => {
         field.required &&
         ((data[field.name] == null) || !data[field.name].toString().length)
       ) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `Field ${field.name} is required`);
       }
       if (data[field.name] && isNaN(parseFloat(data[field.name]))) {
-        throw self.apos.error('invalid');
+        throw self.apos.error('invalid', `Field ${field.name} is not a number`);
       }
       // This makes it possible to have a field that is not required,
       // but min / max defined. This allows the form to be saved and
@@ -499,10 +499,10 @@ module.exports = (self) => {
         field.required &&
         (_.isUndefined(data[field.name]) || !data[field.name].toString().length)
       ) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `Field ${field.name} is required`);
       }
       if (data[field.name] && isNaN(parseFloat(data[field.name]))) {
-        throw self.apos.error('invalid');
+        throw self.apos.error('invalid', `Field ${field.name} is not a number`);
       }
       if (!data[field.name] && data[field.name] !== 0) {
         destination[field.name] = null;
@@ -551,13 +551,13 @@ module.exports = (self) => {
       destination[field.name] = self.apos.launder.string(data[field.name]);
       if (!data[field.name]) {
         if (field.required) {
-          throw self.apos.error('required');
+          throw self.apos.error('required', `Field ${field.name} is required`);
         }
       } else {
         // regex source: https://emailregex.com/
         const matches = data[field.name].match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
         if (!matches) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `Field ${field.name} is not a valid email`);
         }
       }
       destination[field.name] = data[field.name];
@@ -574,7 +574,7 @@ module.exports = (self) => {
         field.required &&
         (data[field.name] == null || !data[field.name].toString().length)
       ) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `Field ${field.name} is required`);
       }
 
       if (field.pattern) {
@@ -756,10 +756,10 @@ module.exports = (self) => {
         field.required &&
         (_.isUndefined(data[field.name]) || !data[field.name].toString().length)
       ) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `Field ${field.name} is required`);
       }
       if (data[field.name] && isNaN(parseFloat(data[field.name]))) {
-        throw self.apos.error('invalid');
+        throw self.apos.error('invalid', `Field ${field.name} is not a number`);
       }
       // Allow for ranges to go unset `min` here does not imply requirement,
       // it is the minimum value the range UI will represent
@@ -847,7 +847,7 @@ module.exports = (self) => {
       }
       destination[field.name] = results;
       if (field.required && !results.length) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `At least one entry required for ${field.name}`);
       }
       if ((field.min !== undefined) && (results.length < field.min)) {
         throw self.apos.error('min');
@@ -1178,7 +1178,7 @@ module.exports = (self) => {
         destination[field.name] = actualDocs;
       }
       if (field.required && (destination[field.name].length === 0)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', `Field ${field.name} is required`);
       }
       if (field.min && field.min > destination[field.name].length) {
         throw self.apos.error('min', `Minimum ${field.withType} required not reached.`);
