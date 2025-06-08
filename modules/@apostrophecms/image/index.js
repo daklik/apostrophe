@@ -162,7 +162,7 @@ module.exports = {
     post: {
       async autocrop(req) {
         if (!self.apos.permission.can(req, 'upload-attachment')) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', 'Permission denied to upload attachments');
         }
         const widgetOptions = sanitizeOptions(req.body.widgetOptions);
         if (!widgetOptions.aspectRatio) {

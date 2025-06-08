@@ -51,14 +51,14 @@ module.exports = {
       async route(req) {
         let modifiedOnOrSince;
         if (!(req.user && req.user._id)) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `User missing for getAll notifications (user ${req.user && req.user._id})`);
         }
         const start = Date.now();
         try {
           modifiedOnOrSince = req.query.modifiedOnOrSince &&
             new Date(req.query.modifiedOnOrSince);
         } catch (e) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `Unrecognized modifiedOnOrSince: ${req.query.modifiedOnOrSince}`);
         }
         const seenIds = req.query.seenIds && self.apos.launder.ids(req.query.seenIds);
         return await attempt();
@@ -194,7 +194,7 @@ module.exports = {
               }
             });
           } catch (error) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Notification not found: ${req.params._id}`);
           } finally {
             await self.apos.lock.unlock(lockId);
           }
@@ -269,10 +269,10 @@ module.exports = {
           req = { user: { _id: req } };
         }
         if (!req.user) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', 'User must be logged in to trigger notifications');
         }
         if (!message) {
-          throw self.apos.error('required');
+          throw self.apos.error('required', 'Notification message required');
         }
 
         req.body = req.body || {};
@@ -327,7 +327,7 @@ module.exports = {
       //   notification actually dismisses.
       async dismiss (req, noteId, delay) {
         if (!req.user) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', 'User must be logged in to dismiss notifications');
         }
 
         await pause(delay);
@@ -355,7 +355,7 @@ module.exports = {
           );
         } catch (error) {
           // Most likely the ID did not belong to an actual notification.
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `Invalid notification id: ${noteId}`);
         }
 
         async function pause (delay) {

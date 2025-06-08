@@ -372,7 +372,7 @@ module.exports = {
             }
 
             if (!page) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', `Page not found: ${req.params._id}`);
             }
 
             if (flat) {
@@ -399,7 +399,7 @@ module.exports = {
             }
 
             if (!result) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', `Home page not found for locale ${req.locale}`);
             }
 
             // Attach `_url` and `_urls` properties to the home page
@@ -445,7 +445,7 @@ module.exports = {
           }
 
           if (!result) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Page ${req.params._id} not found`);
           }
           const renderAreas = req.query['render-areas'];
           const inline = renderAreas === 'inline';
@@ -519,7 +519,7 @@ module.exports = {
             .toObject();
 
           if (!targetPage) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Target page ${targetId} not found`);
           }
           const manager = self.apos.doc.getManager(self.apos.launder.string(input.type));
           if (!manager) {
@@ -532,7 +532,7 @@ module.exports = {
           } else {
             const parentPage = targetPage._ancestors[targetPage._ancestors.length - 1];
             if (!parentPage) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', `Parent page missing for ${targetId}`);
             }
             page = self.newChild(parentPage);
           }
@@ -582,10 +582,10 @@ module.exports = {
         return self.withLock(req, async () => {
           const page = await self.findForEditing(req, { _id }).toObject();
           if (!page) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Page not found: ${_id}`);
           }
           if (!page._edit) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', `No edit permission for ${_id}`);
           }
           const input = req.body;
           const manager = self.apos.doc.getManager(

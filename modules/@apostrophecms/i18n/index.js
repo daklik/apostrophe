@@ -420,7 +420,7 @@ module.exports = {
             }
           }
           if (!sanitizedLocale) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', `Invalid locale prefix: ${req.query.locale}`);
           }
           const result = {};
           if (doc && doc._url) {
@@ -468,7 +468,7 @@ module.exports = {
           const originalMode = (ids[0] && ids[0].split(':')[2]) || req.mode;
           const mode = self.apos.launder.string(req.body.mode, originalMode);
           if (!self.isValidLocale(locale)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', `Invalid locale provided: ${locale}`);
           }
           const found = await self.apos.doc.db.find({
             aposLocale: `${locale}:${mode}`,
@@ -875,10 +875,10 @@ module.exports = {
           throw self.apos.error('forbidden');
         }
         if (!Array.isArray(req.body._ids)) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `Expected _ids array, got ${typeof req.body._ids}`);
         }
         if (!Array.isArray(req.body.toLocales)) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `Expected toLocales array, got ${typeof req.body.toLocales}`);
         }
 
         const ids = self.apos.launder.ids(req.body._ids)

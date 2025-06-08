@@ -53,7 +53,7 @@ module.exports = {
         _id = self.apos.i18n.inferIdLocaleAndMode(req, _id);
         const doc = await self.find(req, { _id }).permission('edit').toObject();
         if (!doc) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', `Document not found: ${_id}`);
         }
         return doc;
       }
@@ -64,7 +64,7 @@ module.exports = {
       post: {
         async slugTaken(req) {
           if (!req.user) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', 'User must be logged in for slug check');
           }
           const slug = self.apos.launder.string(req.body.slug);
           const _id = self.apos.launder.id(req.body._id);
@@ -100,7 +100,7 @@ module.exports = {
         // might not be accepted as a query string.
         async editable(req) {
           if (!req.user) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', 'User must be logged in to check editability');
           }
           const ids = self.apos.launder.ids(req.body.ids);
           if (!ids.length) {
@@ -197,7 +197,7 @@ module.exports = {
         testPermissions(req, doc, options) {
           if (!(options.permissions === false)) {
             if (!self.apos.permission.can(req, 'delete', doc)) {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', `No permission to delete ${doc._id}`);
             }
           }
         }
@@ -206,7 +206,7 @@ module.exports = {
         testPermissions(req, info) {
           if (info.options.permissions !== false) {
             if (!self.apos.permission.can(req, info.options.autopublishing ? 'edit' : 'publish', info.draft)) {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', `Cannot publish ${info.draft._id}`);
             }
           }
         }
@@ -366,7 +366,7 @@ module.exports = {
           const existing = await self.apos.doc.db
             .findOne({ _id: skipReplace ? to : from });
           if (!existing) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Document ${skipReplace ? to : from} not found`);
           }
           const replacement = klona(existing);
           if (!skipReplace) {
@@ -904,7 +904,7 @@ module.exports = {
       testInsertPermissions(req, doc, options) {
         if (options.permissions !== false) {
           if (!self.apos.permission.can(req, 'create', doc)) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', `No permission to create ${doc.type}`);
           }
         }
       },
@@ -947,7 +947,7 @@ module.exports = {
 
       async deleteBody(req, doc, options) {
         if ((options.permissions !== false) && (!self.apos.permission.can(req, 'delete', doc))) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', `No permission to delete ${doc._id}`);
         }
         return self.db.removeOne({
           _id: doc._id
@@ -1393,17 +1393,17 @@ module.exports = {
             }
           });
           if (!info) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Document not found for locking: ${_id}`);
           }
           if (!info.advisoryLock) {
             // Nobody else has a lock but you couldn't get one —
             // must be permissions
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', `No lock for ${_id}`);
           }
           if (!info.advisoryLock) {
             // Nobody else has a lock but you couldn't get one —
             // must be permissions
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', `No lock for ${_id}`);
           }
           if (info.advisoryLock.username === req.user.username) {
             throw self.apos.error('locked', {

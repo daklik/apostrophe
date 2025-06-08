@@ -798,7 +798,7 @@ module.exports = {
         if (options.copyingId) {
           copyOf = await self.findOneForCopying(req, { _id: options.copyingId });
           if (!copyOf) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', `Document to copy not found: ${options.copyingId}`);
           }
           input = {
             ...copyOf,
@@ -865,7 +865,7 @@ module.exports = {
       // and `at` properties.
       async submit(req, draft) {
         if (!self.apos.permission.can(req, 'edit', draft)) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', `Cannot submit ${draft._id}`);
         }
         const submitted = {
           by: req.user && req.user.title,
@@ -887,10 +887,10 @@ module.exports = {
       async dismissSubmission(req, draft) {
         if (!self.apos.permission.can(req, 'publish', draft)) {
           if (!self.apos.permission.can(req, 'edit', draft)) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', `Cannot dismiss ${draft._id}`);
           }
           if (!(draft.submitted && (draft.submitted.byId === req.user._id))) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', 'Only submitter may dismiss');
           }
         }
         // Don't use "return" here, that could leak mongodb details
@@ -1020,7 +1020,7 @@ module.exports = {
       // to achieve this.
       async unpublish(req, doc, options) {
         if (self.options.singleton) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', 'Cannot unpublish singleton');
         }
 
         const DRAFT_SUFFIX = ':draft';
@@ -1175,7 +1175,7 @@ module.exports = {
                   if (!originalTarget) {
                     // Almost impossible (race conditions like someone removing
                     // it while we're in the modal)
-                    throw self.apos.error('notfound');
+                    throw self.apos.error('notfound', `Original target ${lastTargetId} missing`);
                   }
                   const criteria = {
                     path: self.apos.page.getParentPath(originalTarget)
@@ -1317,7 +1317,7 @@ module.exports = {
         });
         if (!previous) {
           // Feature has already been used
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', `No previous publication for ${published._id}`);
         }
         const $set = await self.getRevertDeduplicationSet(req, previous);
         Object.assign(previous, $set);
@@ -1511,7 +1511,7 @@ module.exports = {
 
       async share(req, doc) {
         if (doc._edit !== true) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', `Document not editable for share: ${doc._id}`);
         }
 
         if (!doc._url) {
@@ -1537,7 +1537,7 @@ module.exports = {
 
       async unshare(req, doc) {
         if (doc._edit !== true) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', `Document not editable for unshare: ${doc._id}`);
         }
 
         if (!doc._url) {

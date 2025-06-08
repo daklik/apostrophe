@@ -167,7 +167,8 @@ module.exports = {
               const file = Object.values(req.files || {})[0];
 
               if (!file) {
-                throw self.apos.error('invalid');
+                const fields = Object.keys(req.files || {}).join(', ');
+                throw self.apos.error('invalid', `No file uploaded (fields: ${fields})`);
               }
 
               const attachment = await self.insert(req, file);
@@ -204,13 +205,13 @@ module.exports = {
             const { crop } = req.body;
 
             if (!_id || !crop || typeof crop !== 'object' || Array.isArray(crop)) {
-              throw self.apos.error('invalid');
+              throw self.apos.error('invalid', `Missing or malformed crop data for ${_id}`);
             }
 
             const sanitizedCrop = self.sanitizeCrop(crop);
 
             if (!sanitizedCrop) {
-              throw self.apos.error('invalid');
+              throw self.apos.error('invalid', `Invalid crop coordinates: ${JSON.stringify(crop)}`);
             }
 
             await self.crop(req, _id, sanitizedCrop);
