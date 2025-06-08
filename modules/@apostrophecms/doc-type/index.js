@@ -774,7 +774,7 @@ module.exports = {
         if (options.copyingId) {
           copyOf = await self.findOneForCopying(req, { _id: options.copyingId });
           if (!copyOf) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           input = {
             ...copyOf,
@@ -834,7 +834,7 @@ module.exports = {
       // and `at` properties.
       async submit(req, draft) {
         if (!self.apos.permission.can(req, 'edit', draft)) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         const submitted = {
           by: req.user && req.user.title,
@@ -855,10 +855,10 @@ module.exports = {
       async dismissSubmission(req, draft) {
         if (!self.apos.permission.can(req, 'publish', draft)) {
           if (!self.apos.permission.can(req, 'edit', draft)) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           if (!(draft.submitted && (draft.submitted.byId === req.user._id))) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
         }
         // Don't use "return" here, that could leak mongodb details
@@ -1127,7 +1127,7 @@ module.exports = {
                     .toObject();
                   if (!originalTarget) {
                     // Almost impossible (race conditions like someone removing it while we're in the modal)
-                    throw self.apos.error('notfound');
+                    throw self.apos.error('notfound', { req });
                   }
                   const criteria = {
                     path: self.apos.page.getParentPath(originalTarget)
@@ -1260,7 +1260,7 @@ module.exports = {
 
       async revertPublishedToPrevious(req, published) {
         if (!self.apos.permission.can(req, 'publish', published)) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         const previousId = published._id.replace(':published', ':previous');
         const previous = await self.apos.doc.db.findOne({
@@ -1268,7 +1268,7 @@ module.exports = {
         });
         if (!previous) {
           // Feature has already been used
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
         const $set = await self.getRevertDeduplicationSet(req, previous);
         Object.assign(previous, $set);
@@ -1460,7 +1460,7 @@ module.exports = {
 
       async share(req, doc) {
         if (doc._edit !== true) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         if (!doc._url) {
@@ -1486,7 +1486,7 @@ module.exports = {
 
       async unshare(req, doc) {
         if (doc._edit !== true) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         if (!doc._url) {

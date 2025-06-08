@@ -338,7 +338,7 @@ module.exports = {
       },
       grid(req, role) {
         if (!self.can(req, 'edit', '@apostrophecms/user')) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         const permissionSets = [];
         const effectiveRole = self.apos.launder.select(role, [ 'guest', 'contributor', 'editor', 'admin' ]);

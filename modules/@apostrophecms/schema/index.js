@@ -1783,7 +1783,7 @@ module.exports = {
             !self.fieldTypes[field.type].dynamicChoices ||
             !(field.choices && typeof field.choices === 'string')
           ) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           try {
             choices = await self.evaluateMethod(req, field.choices, field.name, field.moduleName, docId, true);
@@ -1807,7 +1807,7 @@ module.exports = {
           const allowedKeys = getFieldExternalConditionKeys(field);
           // We must tolerate arguments at this stage as we only warn about them later
           if (!allowedKeys.includes(conditionKey.replace(/\(.*\)/, '()'))) {
-            throw self.apos.error('forbidden', `${conditionKey} is not registered as an external condition.`);
+            throw self.apos.error('forbidden', `${conditionKey} is not registered as an external condition.`, { req });
           }
           try {
             const result = await self.evaluateMethod(req, conditionKey, field.name, field.moduleName, docId);

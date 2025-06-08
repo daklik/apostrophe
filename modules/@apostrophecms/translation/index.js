@@ -96,7 +96,7 @@ module.exports = {
       // contain all supported languages for the source/target.
       async languages(req) {
         if (!self.isEnabled() || !self.canAccessApi(req)) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         const name = self.getProvider(req.query.provider)?.name;

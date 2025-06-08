@@ -102,14 +102,14 @@ module.exports = (self) => {
       // This is new and until now if JS client side failed, then it would
       // allow the save with empty values -Lars
       if (field.required && (_.isUndefined(data[field.name]) || !data[field.name].toString().length)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
 
       if (field.pattern) {
         const regex = new RegExp(field.pattern);
 
         if (!regex.test(destination[field.name])) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req, field: field.name });
         }
       }
     },
@@ -259,7 +259,7 @@ module.exports = (self) => {
       destination[field.name] = self.apos.launder.string(data[field.name], field.def);
 
       if (field.required && (_.isUndefined(destination[field.name]) || !destination[field.name].toString().length)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
 
       const test = tinycolor(destination[field.name]);
@@ -440,10 +440,10 @@ module.exports = (self) => {
     async convert(req, field, data, destination) {
       destination[field.name] = self.apos.launder.integer(data[field.name], field.def, field.min, field.max);
       if (field.required && ((data[field.name] == null) || !data[field.name].toString().length)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
       if (data[field.name] && isNaN(parseFloat(data[field.name]))) {
-        throw self.apos.error('invalid');
+        throw self.apos.error('invalid', { req, field: field.name });
       }
       // This makes it possible to have a field that is not required, but min / max defined.
       // This allows the form to be saved and sets the value to null if no value was given by
@@ -494,10 +494,10 @@ module.exports = (self) => {
     async convert(req, field, data, destination) {
       destination[field.name] = self.apos.launder.float(data[field.name], field.def, field.min, field.max);
       if (field.required && (_.isUndefined(data[field.name]) || !data[field.name].toString().length)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
       if (data[field.name] && isNaN(parseFloat(data[field.name]))) {
-        throw self.apos.error('invalid');
+        throw self.apos.error('invalid', { req, field: field.name });
       }
       if (!data[field.name] && data[field.name] !== 0) {
         destination[field.name] = null;
@@ -546,13 +546,13 @@ module.exports = (self) => {
       destination[field.name] = self.apos.launder.string(data[field.name]);
       if (!data[field.name]) {
         if (field.required) {
-          throw self.apos.error('required');
+          throw self.apos.error('required', { req, field: field.name });
         }
       } else {
         // regex source: https://emailregex.com/
         const matches = data[field.name].match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
         if (!matches) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req, field: field.name });
         }
       }
       destination[field.name] = data[field.name];
@@ -566,14 +566,14 @@ module.exports = (self) => {
       destination[field.name] = self.apos.launder.url(data[field.name], field.def, true);
 
       if (field.required && (data[field.name] == null || !data[field.name].toString().length)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
 
       if (field.pattern) {
         const regex = new RegExp(field.pattern);
 
         if (!regex.test(destination[field.name])) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req, field: field.name });
         }
       }
     },
@@ -735,10 +735,10 @@ module.exports = (self) => {
     async convert(req, field, data, destination) {
       destination[field.name] = self.apos.launder.float(data[field.name], field.def, field.min, field.max);
       if (field.required && (_.isUndefined(data[field.name]) || !data[field.name].toString().length)) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
       if (data[field.name] && isNaN(parseFloat(data[field.name]))) {
-        throw self.apos.error('invalid');
+        throw self.apos.error('invalid', { req, field: field.name });
       }
       // Allow for ranges to go unset
       // `min` here does not imply requirement, it is the minimum value the range UI will represent
@@ -806,7 +806,7 @@ module.exports = (self) => {
       }
       destination[field.name] = results;
       if (field.required && !results.length) {
-        throw self.apos.error('required');
+        throw self.apos.error('required', { req, field: field.name });
       }
       if ((field.min !== undefined) && (results.length < field.min)) {
         throw self.apos.error('min');

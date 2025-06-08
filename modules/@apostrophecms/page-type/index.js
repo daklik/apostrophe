@@ -153,7 +153,7 @@ module.exports = {
       beforeMove: {
         checkPermissions(req, doc) {
           if (doc.lastPublishedAt && !self.apos.permission.can(req, 'publish', doc)) {
-            throw self.apos.error('forbidden', 'Contributors may only move unpublished pages.');
+            throw self.apos.error('forbidden', 'Contributors may only move unpublished pages.', { req });
           }
         }
       },
@@ -403,7 +403,7 @@ module.exports = {
         // Check publish permission up front because we won't check it
         // in insert
         if (!self.apos.permission.can(req, 'publish', doc)) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         const _req = req.clone({
           mode: 'published'

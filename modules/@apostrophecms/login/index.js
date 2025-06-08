@@ -134,7 +134,7 @@ module.exports = {
         },
         async logout(req) {
           if (!req.user) {
-            throw self.apos.error('forbidden', req.t('apostrophe:logOutNotLoggedIn'));
+            throw self.apos.error('forbidden', req.t('apostrophe:logOutNotLoggedIn'), { req });
           }
           if (req.token) {
             await self.bearerTokens.removeOne({
@@ -175,7 +175,7 @@ module.exports = {
 
           const requirement = self.requirements[name];
           if (!requirement) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!requirement.props) {
             return {};
@@ -192,13 +192,13 @@ module.exports = {
           );
 
           if (!user) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
 
           const requirement = self.requirements[name];
 
           if (!requirement) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
 
           if (!requirement.verify) {
@@ -227,7 +227,7 @@ module.exports = {
             });
 
             if (!token) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', { req });
             }
 
             await self.bearerTokens.updateOne(token, {
@@ -603,7 +603,7 @@ module.exports = {
           })
           .toObject();
         if (!user) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req: adminReq });
         }
         if (resetToken !== false) {
           await self.apos.user.verifySecret(
@@ -647,11 +647,11 @@ module.exports = {
         });
 
         if (!token) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         if (token.requirementsToVerify.length) {
-          throw self.apos.error('forbidden', 'All requirements must be verified');
+          throw self.apos.error('forbidden', 'All requirements must be verified', { req });
         }
 
         const user = await self.deserializeUser(token.userId);
@@ -659,7 +659,7 @@ module.exports = {
           await self.bearerTokens.removeOne({
             _id: token.userId
           });
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         if (session) {
@@ -703,14 +703,14 @@ module.exports = {
           }
         });
         if (!token) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         const user = await self.deserializeUser(token.userId);
         if (!user) {
           await self.bearerTokens.removeOne({
             _id: token._id
           });
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         return {
           token,

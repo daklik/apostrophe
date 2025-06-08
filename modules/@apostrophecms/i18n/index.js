@@ -400,7 +400,7 @@ module.exports = {
             }
           }
           if (!sanitizedLocale) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           const result = {};
           if (doc && doc._url) {
@@ -437,7 +437,7 @@ module.exports = {
         // might not be accepted as a query string.
         async existInLocale(req) {
           if (!req.user) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           const ids = self.apos.launder.ids(req.body.ids);
           const locale = self.apos.launder.string(req.body.locale);
@@ -445,7 +445,7 @@ module.exports = {
           const originalMode = (ids[0] && ids[0].split(':')[2]) || req.mode;
           const mode = self.apos.launder.string(req.body.mode, originalMode);
           if (!self.isValidLocale(locale)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req, locale });
           }
           const found = await self.apos.doc.db.find({
             aposLocale: `${locale}:${mode}`,
@@ -614,7 +614,7 @@ module.exports = {
           mode = req.mode;
         }
         if ((req.mode === 'draft') && (!self.apos.permission.can(req, 'view-draft'))) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         if (_id.charAt(0) === '_') {
           // A shortcut such as _home or _archive,

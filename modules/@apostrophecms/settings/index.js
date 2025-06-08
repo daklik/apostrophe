@@ -556,7 +556,7 @@ module.exports = {
     return {
       async getAll(req) {
         if (!self.hasSchema() || !req.user) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         const user = await self.apos.user
           .find(req, { _id: req.user._id })
@@ -564,7 +564,7 @@ module.exports = {
           .toObject();
 
         if (!user) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         const values = {
@@ -583,14 +583,14 @@ module.exports = {
       patch: {
         ':subform': async (req) => {
           if (!self.hasSchema() || !req.user) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           let subform = self.getSubform(
             self.apos.launder.string(req.params.subform)
           );
 
           if (!subform || !subform.schema.length) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
 
           await self.handleProtectedSubform(req, subform, req.body);
@@ -605,7 +605,7 @@ module.exports = {
             .toObject();
 
           if (!user) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
 
           await self.apos.schema.convert(req, subform.schema, req.body, user);
