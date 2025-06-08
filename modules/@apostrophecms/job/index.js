@@ -52,14 +52,14 @@ module.exports = {
     return {
       async getOne(req, _id) {
         if (!self.apos.permission.can(req, 'view-draft')) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
 
         const jobId = self.apos.launder.id(_id);
         const job = await self.db.findOne({ _id: jobId });
 
         if (!job) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req, _id: jobId });
         }
 
         job.percentage = !job.total ? 0 : (job.processed / job.total * 100).toFixed(2);

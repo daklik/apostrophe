@@ -141,11 +141,11 @@ module.exports = {
 
           if (autocomplete.length) {
             if (!self.apos.permission.can(req, 'view', '@apostrophecms/any-page-type')) {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', { req });
             }
 
             if (type.length && !self.apos.permission.can(req, 'view', type)) {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', { req });
             }
 
             const query = self.getRestQuery(req).permission(false).limit(10).relationships(false)
@@ -164,7 +164,7 @@ module.exports = {
           if (type.length) {
             const manager = self.apos.doc.getManager(type);
             if (!manager) {
-              throw self.apos.error('invalid');
+              throw self.apos.error('invalid', { req });
             }
 
             const query = self.getRestQuery(req);
@@ -192,7 +192,7 @@ module.exports = {
 
           if (all) {
             if (!self.apos.permission.can(req, 'view', '@apostrophecms/any-page-type')) {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', { req });
             }
             const page = await self.getRestQuery(req).permission(false).and({ level: 0 }).children({
               depth: 1000,
@@ -210,7 +210,7 @@ module.exports = {
             }
 
             if (!page) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', { req });
             }
 
             if (flat) {
@@ -233,7 +233,7 @@ module.exports = {
             }
 
             if (!result) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', { req });
             }
 
             // Attach `_url` and `_urls` properties to the home page
@@ -275,7 +275,7 @@ module.exports = {
           }
 
           if (!result) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (self.apos.launder.boolean(req.query['render-areas']) === true) {
             await self.apos.area.renderDocsAreas(req, [ result ]);
@@ -311,7 +311,7 @@ module.exports = {
         const input = _.omit(req.body, '_targetId', '_position', '_copyingId');
         if (typeof (input) !== 'object') {
           // cheeky
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
 
         if (req.body._newInstance) {
@@ -332,12 +332,12 @@ module.exports = {
             .toObject();
 
           if (!targetPage) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           const manager = self.apos.doc.getManager(self.apos.launder.string(input.type));
           if (!manager) {
             // sneaky
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           let page;
           if ((position === 'firstChild') || (position === 'lastChild')) {
@@ -345,7 +345,7 @@ module.exports = {
           } else {
             const parentPage = targetPage._ancestors[targetPage._ancestors.length - 1];
             if (!parentPage) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', { req });
             }
             page = self.newChild(parentPage);
           }
@@ -391,15 +391,15 @@ module.exports = {
         return self.withLock(req, async () => {
           const page = await self.findForEditing(req, { _id }).toObject();
           if (!page) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!page._edit) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           const input = req.body;
           const manager = self.apos.doc.getManager(self.apos.launder.string(input.type) || page.type);
           if (!manager) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           let tabId = null;
           let lock = false;
@@ -439,7 +439,7 @@ module.exports = {
         });
 
         if (!page) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         return self.delete(req, page);
       },
@@ -466,11 +466,11 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!draft.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.publish(req, draft);
         },
@@ -482,16 +482,16 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!draft.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           const toLocale = self.apos.i18n.sanitizeLocaleName(req.body.toLocale);
           const update = self.apos.launder.boolean(req.body.update);
           if ((!toLocale) || (toLocale === req.locale)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.localize(req, draft, toLocale, {
             update
@@ -506,7 +506,7 @@ module.exports = {
             aposDocId
           });
           if (!published) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           return self.withLock(
             req,
@@ -521,7 +521,7 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           const manager = self.apos.doc.getManager(draft.type);
           return manager.submit(req, draft);
@@ -534,7 +534,7 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           const manager = self.apos.doc.getManager(draft.type);
           return manager.dismissSubmission(req, draft);
@@ -547,11 +547,11 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!draft.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.revertDraftToPublished(req, draft);
         },
@@ -563,11 +563,11 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!published) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!published.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.revertPublishedToPrevious(req, published);
         },
@@ -576,7 +576,7 @@ module.exports = {
           const share = self.apos.launder.boolean(req.body.share);
 
           if (!_id) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
 
           const draft = await self.findOneForEditing(req, {
@@ -584,7 +584,7 @@ module.exports = {
           });
 
           if (!draft || draft.aposMode !== 'draft') {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
 
           const sharedDoc = share
@@ -790,10 +790,10 @@ database.`);
           const page = await self.findOneForEditing(req, { _id });
           let result;
           if (!page) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!page._edit) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           const patches = Array.isArray(input._patches) ? input._patches : [ input ];
           // Conventional for loop so we can handle the last one specially
@@ -845,7 +845,7 @@ database.`);
       async applyPatch(req, page, input) {
         const manager = self.apos.doc.getManager(self.apos.launder.string(input.type) || page.type);
         if (!manager) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
         self.apos.schema.implementPatchOperators(input, page);
         const parentPage = page._ancestors.length && page._ancestors[page._ancestors.length - 1];
@@ -930,7 +930,7 @@ database.`);
           let peers;
           const target = await self.getTarget(req, targetId, position);
           if (!target) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           let parent;
           if ((position === 'before') || (position === 'after')) {
@@ -949,11 +949,11 @@ database.`);
             peers = target._children;
           }
           if (!parent) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (options.permissions !== false) {
             if (!parent._create) {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', { req });
             }
           }
           let pushed = [];
@@ -978,7 +978,7 @@ database.`);
             page.rank = target.rank;
             const index = peers.findIndex(peer => peer._id === target._id);
             if (index === -1) {
-              throw self.apos.error('notfound');
+              throw self.apos.error('notfound', { req });
             }
             pushed = peers.slice(index).map(peer => peer._id);
           } else if (position === 'after') {
@@ -1025,7 +1025,7 @@ database.`);
           // (`page-type` module).
           if (page.lastPublishedAt && !parent.lastPublishedAt) {
             await self.unpublish(req, page);
-            throw self.apos.error('forbidden', 'Publish the parent page first.');
+            throw self.apos.error('forbidden', 'Publish the parent page first.', { req });
           }
           return page;
         });
@@ -1167,11 +1167,11 @@ database.`);
           await manager.emit('beforeMove', req, moved, target, position);
           determineRankAndNewParent();
           if (!moved._edit) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           if (!(parent && oldParent)) {
             // Move outside tree
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           if (
             (oldParent._id !== parent._id) &&
@@ -1179,10 +1179,10 @@ database.`);
             (!parent._create) &&
             (oldParent.type === '@apostrophecms/archive-page' && !parent._edit)
           ) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           if (moved.lastPublishedAt && !parent.lastPublishedAt) {
-            throw self.apos.error('forbidden', 'Publish the parent page first.');
+            throw self.apos.error('forbidden', 'Publish the parent page first.', { req });
           }
           await nudgeNewPeers();
           await moveSelf();
@@ -1338,10 +1338,10 @@ database.`);
             permission: false
           }).toObject();
         if (!target) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         if (target.type === '@apostrophecms/archive-page' && target.level === 1 && position === 'after') {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
         return target;
       },
@@ -1459,7 +1459,7 @@ database.`);
         }
         const page = await findPage();
         if (!page) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         const parent = page._ancestors[0];
         if (!parent) {
@@ -2427,7 +2427,7 @@ database.`);
       publicApiCheck(req) {
         if (!self.options.publicApiProjection) {
           if (!self.canAccessApi(req)) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
         }
       },

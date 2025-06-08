@@ -26,9 +26,21 @@ module.exports = {
           data = message;
           message = null;
         }
+        const context = {};
+        if (data.req) {
+          const req = data.req;
+          context.method = req.method;
+          context.url = req.originalUrl || req.url;
+          if (!data._id && req.params && req.params._id) {
+            context._id = req.params._id;
+          } else if (!data._id && req.body && req.body._id) {
+            context._id = req.body._id;
+          }
+          delete data.req;
+        }
         const error = new Error(message || name);
         error.name = name;
-        error.data = data;
+        error.data = { ...data, ...context };
 
         // Establish a difference between errors built here and those elsewhere.
         error.aposError = true;

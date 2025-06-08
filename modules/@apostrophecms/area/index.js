@@ -39,7 +39,7 @@ module.exports = {
           const field = self.apos.schema.getFieldById(areaFieldId);
 
           if (!field) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req, areaFieldId });
           }
 
           const widgets = self.getWidgets(field.options);
@@ -49,7 +49,7 @@ module.exports = {
           const manager = self.getWidgetManager(type);
           if (!manager) {
             self.warnMissingWidgetType(type);
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req, type });
           }
           widget = await sanitize(widget);
           widget._edit = true;
@@ -381,14 +381,14 @@ module.exports = {
         async function find() {
           const doc = await self.apos.doc.find(req, { _id: docId }).permission('edit').toObject();
           if (!doc) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req, _id: docId });
           }
           return doc;
         }
         async function update(doc) {
           const components = dotPath.split(/\./);
           if (_.includes(self.forbiddenAreas, components[0])) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           // If it's not a top level property, it's
           // always okay - unless it already exists
@@ -396,7 +396,7 @@ module.exports = {
           if (components.length > 1) {
             const existing = _.get(doc, dotPath);
             if (existing && existing.metaType !== 'area') {
-              throw self.apos.error('forbidden');
+              throw self.apos.error('forbidden', { req });
             }
           }
           const existingArea = _.get(doc, dotPath);

@@ -289,7 +289,7 @@ module.exports = {
           }
 
           if (!doc) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (self.apos.launder.boolean(req.query['render-areas']) === true) {
             await self.apos.area.renderDocsAreas(req, [ doc ]);
@@ -350,17 +350,17 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!draft.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.publish(req, draft);
         },
         async publish (req) {
           if (!Array.isArray(req.body._ids)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
 
           req.body._ids = req.body._ids.map(_id => {
@@ -374,7 +374,7 @@ module.exports = {
               const piece = await self.findOneForEditing(req, { _id: id });
 
               if (!piece) {
-                throw self.apos.error('notfound');
+                throw self.apos.error('notfound', { req });
               }
 
               await self.publish(req, piece);
@@ -385,7 +385,7 @@ module.exports = {
         },
         async archive (req) {
           if (!Array.isArray(req.body._ids)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
 
           req.body._ids = req.body._ids.map(_id => {
@@ -399,7 +399,7 @@ module.exports = {
               const piece = await self.findOneForEditing(req, { _id: id });
 
               if (!piece) {
-                throw self.apos.error('notfound');
+                throw self.apos.error('notfound', { req });
               }
 
               piece.archived = true;
@@ -411,7 +411,7 @@ module.exports = {
         },
         async restore (req) {
           if (!Array.isArray(req.body._ids)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
 
           req.body._ids = req.body._ids.map(_id => {
@@ -425,7 +425,7 @@ module.exports = {
               const piece = await self.findOneForEditing(req, { _id: id });
 
               if (!piece) {
-                throw self.apos.error('notfound');
+                throw self.apos.error('notfound', { req });
               }
 
               piece.archived = false;
@@ -443,15 +443,15 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!draft.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           const toLocale = self.apos.i18n.sanitizeLocaleName(req.body.toLocale);
           if ((!toLocale) || (toLocale === req.locale)) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           const update = self.apos.launder.boolean(req.body.update);
           return self.localize(req, draft, toLocale, {
@@ -467,7 +467,7 @@ module.exports = {
             aposDocId
           });
           if (!published) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           return self.unpublish(req, published);
         },
@@ -479,7 +479,7 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           return self.submit(req, draft);
         },
@@ -491,7 +491,7 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           return self.dismissSubmission(req, draft);
         },
@@ -503,11 +503,11 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!draft) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!draft.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.revertDraftToPublished(req, draft);
         },
@@ -519,11 +519,11 @@ module.exports = {
             aposDocId: _id.split(':')[0]
           });
           if (!published) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!published.aposLocale) {
             // Not subject to draft/publish workflow
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
           return self.revertPublishedToPrevious(req, published);
         },
@@ -532,7 +532,7 @@ module.exports = {
           const share = self.apos.launder.boolean(req.body.share);
 
           if (!_id) {
-            throw self.apos.error('invalid');
+            throw self.apos.error('invalid', { req });
           }
 
           const draft = await self.findOneForEditing(req, {
@@ -540,7 +540,7 @@ module.exports = {
           });
 
           if (!draft || draft.aposMode !== 'draft') {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
 
           const sharedDoc = share
@@ -673,7 +673,7 @@ module.exports = {
         // Check publish permission up front because we won't check it
         // in insert
         if (!self.apos.permission.can(req, 'publish', doc)) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         return self.insert(
           req.clone({ mode: 'published' }),
@@ -689,7 +689,7 @@ module.exports = {
       requireOneForEditing(req, criteria) {
         const piece = self.findForEditing(req, criteria).toObject();
         if (!piece) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req });
         }
         return piece;
       },
@@ -783,7 +783,7 @@ module.exports = {
       //   async function one(req, id) {
       //     const piece = self.findForEditing(req, { _id: id }).toObject();
       //     if (!piece) {
-      //       throw self.apos.error('notfound');
+      //       throw self.apos.error('notfound', { req });
       //     }
       //     await change(req, piece, data);
       //   }
@@ -855,10 +855,10 @@ module.exports = {
         return self.apos.lock.withLock(`@apostrophecms/${_id}`, async () => {
           const piece = await self.findOneForEditing(req, { _id });
           if (!piece) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           if (!piece._edit) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
           let tabId = null;
           let lock = false;
@@ -928,7 +928,7 @@ module.exports = {
           const piece = await self.findOneForEditing(req, { _id });
           let result;
           if (!piece) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
           const patches = Array.isArray(input._patches)
             ? input._patches
@@ -1035,7 +1035,7 @@ module.exports = {
       publicApiCheck(req) {
         if (!self.options.publicApiProjection) {
           if (!self.canAccessApi(req)) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req });
           }
         }
       },

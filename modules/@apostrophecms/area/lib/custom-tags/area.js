@@ -73,7 +73,7 @@ module.exports = function(self) {
         if (docId) {
           let mainDoc = await self.apos.doc.db.findOne({ _id: docId });
           if (!mainDoc) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { _id: docId });
           }
           let docDotPath;
           try {
@@ -81,7 +81,7 @@ module.exports = function(self) {
           } catch (e) {
             // Race condition: someone removed the area's parent object.
             // Unlikely thanks to advisory locking
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { _id: docId });
           }
           const areaDotPath = docDotPath ? `${docDotPath}.${name}` : name;
           await self.apos.doc.db.updateOne({

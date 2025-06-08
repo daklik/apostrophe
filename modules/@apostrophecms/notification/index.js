@@ -51,13 +51,13 @@ module.exports = {
       async route(req) {
         let modifiedOnOrSince;
         if (!(req.user && req.user._id)) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
         const start = Date.now();
         try {
           modifiedOnOrSince = req.query.modifiedOnOrSince && new Date(req.query.modifiedOnOrSince);
         } catch (e) {
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
         const seenIds = req.query.seenIds && self.apos.launder.ids(req.query.seenIds);
         return await attempt();
@@ -192,7 +192,7 @@ module.exports = {
               }
             });
           } catch (error) {
-            throw self.apos.error('notfound');
+            throw self.apos.error('notfound', { req, _id: req.params._id });
           } finally {
             await self.apos.lock.unlock(lockId);
           }
@@ -265,10 +265,10 @@ module.exports = {
           req = { user: { _id: req } };
         }
         if (!req.user) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
         if (!message) {
-          throw self.apos.error('required');
+          throw self.apos.error('required', { req });
         }
 
         req.body = req.body || {};
@@ -326,7 +326,7 @@ module.exports = {
       //   notification actually dismisses.
       async dismiss (req, noteId, delay) {
         if (!req.user) {
-          throw self.apos.error('forbidden');
+          throw self.apos.error('forbidden', { req });
         }
 
         await pause(delay);
@@ -354,7 +354,7 @@ module.exports = {
           );
         } catch (error) {
           // Most likely the ID did not belong to an actual notification.
-          throw self.apos.error('invalid');
+          throw self.apos.error('invalid', { req });
         }
 
         async function pause (delay) {

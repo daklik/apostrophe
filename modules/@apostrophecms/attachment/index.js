@@ -164,7 +164,7 @@ module.exports = {
               const file = Object.values(req.files || {})[0];
 
               if (!file) {
-                throw self.apos.error('invalid');
+                throw self.apos.error('invalid', { req });
               }
 
               const attachment = await self.insert(req, file);
@@ -201,13 +201,13 @@ module.exports = {
             const { crop } = req.body;
 
             if (!_id || !crop || typeof crop !== 'object' || Array.isArray(crop)) {
-              throw self.apos.error('invalid');
+              throw self.apos.error('invalid', { req, _id });
             }
 
             const sanitizedCrop = self.sanitizeCrop(crop);
 
             if (!sanitizedCrop) {
-              throw self.apos.error('invalid');
+              throw self.apos.error('invalid', { req, _id });
             }
 
             await self.crop(req, _id, sanitizedCrop);
@@ -419,7 +419,7 @@ module.exports = {
         };
         if (!(options.permissions === false)) {
           if (!self.apos.permission.can(req, 'upload-attachment')) {
-            throw self.apos.error('forbidden');
+            throw self.apos.error('forbidden', { req });
           }
         }
         info.length = await self.apos.util.fileLength(file.path);
@@ -466,7 +466,7 @@ module.exports = {
       async update(req, file, attachment) {
         const existing = await self.db.findOne({ _id: attachment._id });
         if (!existing) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req, _id: attachment._id });
         }
 
         const projection = {
@@ -533,7 +533,7 @@ module.exports = {
         const info = await self.db.findOne({ _id });
 
         if (!info) {
-          throw self.apos.error('notfound');
+          throw self.apos.error('notfound', { req, _id });
         }
 
         if (!self.croppable[info.extension]) {
